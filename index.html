@@ -24,6 +24,10 @@
       <select id="device-select" style="display: none">
         <option value="">None selected</option>
       </select>
+      <select id="facing-select" style="display: none">
+        <option value="enviroment">Facing environment (back camera)</option>
+        <option value="user">Facing user</option>
+      </select>
       <br />
       <button id="device-select-button">Start</button>
     </div>
@@ -63,6 +67,7 @@
 
                 devices.forEach(function(device) {
                   var option = document.createElement("option");
+                  console.info(device);
                   option.setAttribute("value", device.deviceId);
                   option.text = device.label;
                   document.getElementById("device-select").append(option);
@@ -78,9 +83,16 @@
                 b.onclick = function(e) {
                   if (s.value) {
                     var deviceId = s.value;
+                    var mode = document.getElementById("facing-select").value;
+                    console.info(deviceId);
 
                     navigator.mediaDevices
-                      .getUserMedia({ video: { deviceId: deviceId } })
+                      .getUserMedia({
+                        video: {
+                          deviceId: deviceId,
+                          facingMode: { exact: mode }
+                        }
+                      })
                       .then(function(stream) {
                         document.getElementById("choose-device").remove();
                         var v = document.getElementById("preview");
@@ -90,8 +102,8 @@
                         if ("requestFullscreen" in v) {
                           v.requestFullscreen();
                         } else {
-                            v.setAttribute('controls', true);
-                            v.play();
+                          v.setAttribute("controls", true);
+                          v.play();
                         }
                       });
                   }
