@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Fullscreen Camera</title>
+  </head>
+  <body>
+    <div id="intro">
+      <h1>Fullscreen Camera</h1>
+      <ul>
+        <li>No ads</li>
+        <li>No watermarks</li>
+        <li>No stupid paywalls</li>
+        <li>It just fucking works</li>
+        <li>Intended for QuickTime recording</li>
+      </ul>
+      <button onclick="start()">Start</button>
+    </div>
+    <div id="choose-device" style="display: none">
+      <h1>Choose a Device</h1>
+      <i id="device-loading">Finding media devices...</i>
+      <select id="device-select" style="display: none">
+        <option value="">None selected</option>
+      </select>
+      <br />
+      <button id="device-select-button">Start</button>
+    </div>
+    <video
+      id="preview"
+      style="display: none; position: fixed; top: 0; left: 0; height: 100%; object-fit: cover; width: 100%;"
+      autoplay
+      muted
+    ></video>
+    <script>
+      function start() {
+        document.getElementById("intro").remove();
+        document
+          .getElementById("choose-device")
+          .style.removeProperty("display");
+        navigator.mediaDevices
+          .getUserMedia({ video: true })
+          .then(function(stream) {
+            stream.getTracks().forEach(function(track) {
+              track.stop();
+            });
+
+            return navigator.mediaDevices
+              .enumerateDevices()
+              .then(function(devices) {
+                devices = devices.filter(function(device) {
+                  return device.kind === "videoinput";
+                });
+
+                if (!devices.length) {
+                  var t = document.getElementById("device-loading");
+                  t.style.color = "red";
+                  t.textContent = "No video devices found.";
+                  return;
+                }
+
+                devices.forEach(function(device) {
+                  var option = document.createElement("option");
+                  option.setAttribute("value", device.deviceId);
+                  option.text = device.label;
+                  document.getElementById("device-select").append(option);
+                  document
+                    .getElementById("device-select")
+                    .style.removeProperty("display");
+                });
+
+                document.getElementById("device-loading").remove();
+
+                var s = document.getElementById("device-select");
+                var b = document.getElementById("device-select-button");
+                b.onclick = function(e) {
+                  if (s.value) {
+                    var deviceId = s.value;
+
+                    navigator.mediaDevices
+                      .getUserMedia({ video: { deviceId: deviceId } })
+                      .then(function(stream) {
+                        document.getElementById("choose-device").remove();
+                        var v = document.getElementById("preview");
+                        v.srcObject = stream;
+                        v.style.removeProperty("display");
+                        v.requestFullscreen();
+                      });
+                  }
+                };
+              });
+          });
+      }
+    </script>
+  </body>
+</html>
