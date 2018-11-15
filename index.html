@@ -86,7 +86,13 @@
                         var v = document.getElementById("preview");
                         v.srcObject = stream;
                         v.style.removeProperty("display");
-                        v.requestFullscreen();
+
+                        if ("requestFullscreen" in v) {
+                          v.requestFullscreen();
+                        } else {
+                            v.setAttribute('controls', true);
+                            v.play();
+                        }
                       });
                   }
                 };
